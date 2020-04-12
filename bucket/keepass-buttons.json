@@ -7,9 +7,9 @@
   "hash": "C1872FE401DB765382D7B0AA09E51E5DC45B0D664AF49B3F8BBBD5E4DB3E2EB5",
   "depends": "extras/keepass",
   "installer": {
-    "script": "\"$dir\\Update-KeepassButtons.ps1\" \"$(appdir keepass $global)\\current\" add"
+    "args": [ "$(appdir keepass $global)", "add"]
   },
   "uninstaller": {
-    "script": "\"$dir\\Update-KeepassButtons.ps1\" \"$(appdir keepass $global)\\current\" remove"
+    "args": [ "$(appdir keepass $global)", "remove"]
   }
 }
