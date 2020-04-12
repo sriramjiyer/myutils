@@ -2,14 +2,14 @@
   "homepage": "https://github.com/sriramjiyer/myutils",
   "description": "Script to add utility buttons to Keepass through scoop.",
   "license": "GPL-3.0",
-  "version": "2.1.3",
+  "version": "1.0.0",
   "url": "https://raw.githubusercontent.com/sriramjiyer/myutils/master/scripts/powershell/Update-KeepassButtons.ps1",
   "hash": "C1872FE401DB765382D7B0AA09E51E5DC45B0D664AF49B3F8BBBD5E4DB3E2EB5",
   "depends": "extras/keepass",
   "installer": {
-    "args": [ "$(appdir keepass $global)", "add"]
+    "args": [ "$(appdir keepass $global)\\current", "add"]
   },
   "uninstaller": {
-    "args": [ "$(appdir keepass $global)", "remove"]
+    "args": [ "$(appdir keepass $global)\\current", "remove"]
   }
 }
