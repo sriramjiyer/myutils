@@ -29,6 +29,7 @@ scoop install keepass-plugin-KPEnhancedEntryView keepass-buttons
 
 # Azure
 scoop install azure-cli
+az extension add --name resource-graph
 
 # MSSQL
 scoop install azuredatastudio
