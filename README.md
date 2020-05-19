@@ -34,4 +34,10 @@ az extension add --name resource-graph
 # MSSQL
 scoop install azuredatastudio
 
+# Microsoft Teams Mute toggle utility
+scoop install toggle_teams_mute_exe
+
+# Microsoft Teams Mute toggle utility - ahk script
+# scoop install autohotkey toggle_teams_mute_ahk
+
 ```
