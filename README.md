@@ -32,7 +32,7 @@ scoop install azure-cli
 az extension add --name resource-graph
 
 # MSSQL
-scoop install azuredatastudio
+scoop install azuredatastudio linqpad
 
 # Microsoft Teams Mute toggle utility - avoiding because symantec antivirus quaranties the exe
 # scoop install toggle_teams_mute_exe
