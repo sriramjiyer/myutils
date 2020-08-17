@@ -28,8 +28,14 @@ keepass --exit-all
 scoop install keepass-plugin-KPEnhancedEntryView keepass-buttons
 
 # Azure
-scoop install azure-cli
+scoop install azure-cli azure-ps
 az extension add --name resource-graph
+
+# Powershell core
+scoop install pwsh
+
+# Dotnet core
+scoop install dotnet-sdk
 
 # MSSQL
 scoop install azuredatastudio linqpad
