@@ -197,6 +197,26 @@ $myTriggers = [xml]@'
 </Triggers>
 '@
 
+$MyUrlCustomOverrides = [xml]@'
+<CustomOverrides>
+    <Override>
+        <Enabled>true</Enabled>
+        <Scheme>edgeguest</Scheme>
+        <UrlOverride>cmd://"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" -guest https:{BASE:RMVSCM}</UrlOverride>
+    </Override>
+    <Override>
+        <Enabled>true</Enabled>
+        <Scheme>runasnetonly</Scheme>
+        <UrlOverride>cmd://runas.exe /netonly /user:{USERNAME} "{T-CONV:/{BASE:PATH}/Uri-Dec/}"</UrlOverride>
+    </Override>
+    <Override>
+        <Enabled>true</Enabled>
+        <Scheme>edgepriv</Scheme>
+        <UrlOverride>cmd://"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" -inprivate https:{BASE:RMVSCM}</UrlOverride>
+    </Override>
+</CustomOverrides>
+'@
+
 $kpConfig = [xml](Get-Content -Path $kpConfigFile)
 
 foreach ( $myTrigger in $myTriggers.SelectNodes('//Trigger') ) {
@@ -213,6 +233,24 @@ foreach ( $myTrigger in $myTriggers.SelectNodes('//Trigger') ) {
     else {
         if ($UpdateAction -eq 'add') {
             $null = $kpConfig.SelectSingleNode('//TriggerSystem/Triggers').AppendChild($kpConfig.ImportNode($myTrigger, $true))
+        }
+    }
+}
+
+foreach ( $MyUrlCustomOverride in $MyUrlCustomOverrides.SelectNodes('//Override') ) {
+    $Scheme = $MyUrlCustomOverride.Scheme
+    $KpUrlCustomOverride = $kpConfig.SelectSingleNode("//Integration/UrlSchemeOverrides/CustomOverrides/Override/Scheme[text()=""$Scheme""]")
+    if ( $KpUrlCustomOverride -ne $null) {
+        if ($UpdateAction -eq 'add') {
+            $null = $KpUrlCustomOverride.ParentNode.ParentNode.ReplaceChild($kpConfig.ImportNode($KpUrlCustomOverride, $true), $KpUrlCustomOverride.ParentNode)
+        }
+        else {
+            $null = $KpUrlCustomOverride.ParentNode.ParentNode.RemoveChild($KpUrlCustomOverride.ParentNode)
+        }
+    }
+    else {
+        if ($UpdateAction -eq 'add') {
+            $null = $kpConfig.SelectSingleNode('//Integration/UrlSchemeOverrides/CustomOverrides').AppendChild($kpConfig.ImportNode($MyUrlCustomOverride, $true))
         }
     }
 }
