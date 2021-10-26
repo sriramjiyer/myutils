@@ -26,6 +26,7 @@ if (-Not (Test-Path -Path $kpConfigFile -PathType Leaf) ) {
         keepass
         Start-Sleep -Seconds 5
         keepass --exit-all
+        Start-Sleep -Seconds 5
         if (-Not (Test-Path -Path $kpConfigFile -PathType Leaf) ) {
             throw "Keepass config file $kpConfigFile not found."
         }
