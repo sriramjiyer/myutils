@@ -23,7 +23,12 @@ $kpConfigFile = Join-Path -Path $KeepassAppdir -ChildPath 'KeePass.config.xml'
 
 if (-Not (Test-Path -Path $kpConfigFile -PathType Leaf) ) {
     if ( $UpdateAction -eq 'add' ) {
-        throw "Keepass config file $kpConfigFile not found."
+        keepass
+        Start-Sleep -Seconds 5
+        keepass --exit-all
+        if (-Not (Test-Path -Path $kpConfigFile -PathType Leaf) ) {
+            throw "Keepass config file $kpConfigFile not found."
+        }
     } else {
         exit 0
     }
