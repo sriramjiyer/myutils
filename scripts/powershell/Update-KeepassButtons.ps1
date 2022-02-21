@@ -1,3 +1,4 @@
+# Version 1.0.7
 [CmdletBinding()]
 param (
     [Parameter(Mandatory=$true,
