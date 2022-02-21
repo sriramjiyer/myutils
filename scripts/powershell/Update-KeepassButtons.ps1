@@ -21,21 +21,7 @@ $ErrorActionPreference = 'stop'
 
 $kpConfigFile = Join-Path -Path $KeepassAppdir -ChildPath 'KeePass.config.xml'
 
-if (-Not (Test-Path -Path $kpConfigFile -PathType Leaf) ) {
-    if ( $UpdateAction -eq 'add' ) {
-        keepass
-        Start-Sleep -Seconds 5
-        keepass --exit-all
-        Start-Sleep -Seconds 5
-        if (-Not (Test-Path -Path $kpConfigFile -PathType Leaf) ) {
-            throw "Keepass config file $kpConfigFile not found."
-        }
-    } else {
-        exit 0
-    }
-}
-
-$myTriggers = [xml]@'
+$myTriggersText = [xml]@'
 <Triggers>
 <Trigger>
     <Guid>1GT2YIzhBUm7lLOFOkG5Vg==</Guid>
@@ -207,7 +193,7 @@ $myTriggers = [xml]@'
 </Triggers>
 '@
 
-$MyUrlCustomOverrides = [xml]@'
+$MyUrlCustomOverridesText = @'
 <CustomOverrides>
     <Override>
         <Enabled>true</Enabled>
@@ -226,6 +212,29 @@ $MyUrlCustomOverrides = [xml]@'
     </Override>
 </CustomOverrides>
 '@
+
+$myTriggers = [xml]$myTriggersText
+$MyUrlCustomOverrides = [xml]$MyUrlCustomOverridesText
+
+$DefaultFile = @"
+<Configuration xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Application>
+    <Start>
+      <CheckForUpdate>false</CheckForUpdate>
+      <CheckForUpdateConfigured>true</CheckForUpdateConfigured>
+    </Start>
+    <TriggerSystem>
+      $myTriggersText
+    </TriggerSystem>
+  </Application>
+  <Integration>
+    <UrlSchemeOverrides>
+      $MyUrlCustomOverridesText
+    </UrlSchemeOverrides>
+  </Integration>
+</Configuration>
+"@
+
 
 $kpConfig = [xml](Get-Content -Path $kpConfigFile)
 
@@ -247,22 +256,30 @@ foreach ( $myTrigger in $myTriggers.SelectNodes('//Trigger') ) {
     }
 }
 
-foreach ( $MyUrlCustomOverride in $MyUrlCustomOverrides.SelectNodes('//Override') ) {
-    $Scheme = $MyUrlCustomOverride.Scheme
-    $KpUrlCustomOverride = $kpConfig.SelectSingleNode("//Integration/UrlSchemeOverrides/CustomOverrides/Override/Scheme[text()=""$Scheme""]")
-    if ( $KpUrlCustomOverride -ne $null) {
-        if ($UpdateAction -eq 'add') {
-            $null = $KpUrlCustomOverride.ParentNode.ParentNode.ReplaceChild($kpConfig.ImportNode($KpUrlCustomOverride, $true), $KpUrlCustomOverride.ParentNode)
+if (-Not (Test-Path -Path $kpConfigFile -PathType Leaf) ) {
+    if ( $UpdateAction -eq 'add' ) {
+        Set-Content -Path $kpConfigFile -Value $DefaultFile
+    } else {
+        exit 0
+    }
+} else {
+    foreach ( $MyUrlCustomOverride in $MyUrlCustomOverrides.SelectNodes('//Override') ) {
+        $Scheme = $MyUrlCustomOverride.Scheme
+        $KpUrlCustomOverride = $kpConfig.SelectSingleNode("//Integration/UrlSchemeOverrides/CustomOverrides/Override/Scheme[text()=""$Scheme""]")
+        if ( $KpUrlCustomOverride -ne $null) {
+            if ($UpdateAction -eq 'add') {
+                $null = $KpUrlCustomOverride.ParentNode.ParentNode.ReplaceChild($kpConfig.ImportNode($KpUrlCustomOverride, $true), $KpUrlCustomOverride.ParentNode)
+            }
+            else {
+                $null = $KpUrlCustomOverride.ParentNode.ParentNode.RemoveChild($KpUrlCustomOverride.ParentNode)
+            }
         }
         else {
-            $null = $KpUrlCustomOverride.ParentNode.ParentNode.RemoveChild($KpUrlCustomOverride.ParentNode)
+            if ($UpdateAction -eq 'add') {
+                $null = $kpConfig.SelectSingleNode('//Integration/UrlSchemeOverrides/CustomOverrides').AppendChild($kpConfig.ImportNode($MyUrlCustomOverride, $true))
+            }
         }
     }
-    else {
-        if ($UpdateAction -eq 'add') {
-            $null = $kpConfig.SelectSingleNode('//Integration/UrlSchemeOverrides/CustomOverrides').AppendChild($kpConfig.ImportNode($MyUrlCustomOverride, $true))
-        }
-    }
-}
 
-$kpConfig.Save($kpConfigFile)
+    $kpConfig.Save($kpConfigFile)
+}
