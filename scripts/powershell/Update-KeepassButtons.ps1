@@ -236,27 +236,6 @@ $DefaultFile = @"
 </Configuration>
 "@
 
-
-$kpConfig = [xml](Get-Content -Path $kpConfigFile)
-
-foreach ( $myTrigger in $myTriggers.SelectNodes('//Trigger') ) {
-    $guid = $myTrigger.Guid
-    $kpTrigger = $kpConfig.SelectSingleNode("//TriggerSystem/Triggers/Trigger/Guid[text()=""$guid""]")
-    if ( $kpTrigger -ne $null) {
-        if ($UpdateAction -eq 'add') {
-            $null = $kpTrigger.ParentNode.ParentNode.ReplaceChild($kpConfig.ImportNode($myTrigger, $true), $kpTrigger.ParentNode)
-        }
-        else {
-            $null = $kpTrigger.ParentNode.ParentNode.RemoveChild($kpTrigger.ParentNode)
-        }
-    }
-    else {
-        if ($UpdateAction -eq 'add') {
-            $null = $kpConfig.SelectSingleNode('//TriggerSystem/Triggers').AppendChild($kpConfig.ImportNode($myTrigger, $true))
-        }
-    }
-}
-
 if (-Not (Test-Path -Path $kpConfigFile -PathType Leaf) ) {
     if ( $UpdateAction -eq 'add' ) {
         Set-Content -Path $kpConfigFile -Value $DefaultFile
@@ -264,6 +243,25 @@ if (-Not (Test-Path -Path $kpConfigFile -PathType Leaf) ) {
         exit 0
     }
 } else {
+    $kpConfig = [xml](Get-Content -Path $kpConfigFile)
+
+    foreach ( $myTrigger in $myTriggers.SelectNodes('//Trigger') ) {
+        $guid = $myTrigger.Guid
+        $kpTrigger = $kpConfig.SelectSingleNode("//TriggerSystem/Triggers/Trigger/Guid[text()=""$guid""]")
+        if ( $kpTrigger -ne $null) {
+            if ($UpdateAction -eq 'add') {
+                $null = $kpTrigger.ParentNode.ParentNode.ReplaceChild($kpConfig.ImportNode($myTrigger, $true), $kpTrigger.ParentNode)
+            }
+            else {
+                $null = $kpTrigger.ParentNode.ParentNode.RemoveChild($kpTrigger.ParentNode)
+            }
+        }
+        else {
+            if ($UpdateAction -eq 'add') {
+                $null = $kpConfig.SelectSingleNode('//TriggerSystem/Triggers').AppendChild($kpConfig.ImportNode($myTrigger, $true))
+            }
+        }
+    }
     foreach ( $MyUrlCustomOverride in $MyUrlCustomOverrides.SelectNodes('//Override') ) {
         $Scheme = $MyUrlCustomOverride.Scheme
         $KpUrlCustomOverride = $kpConfig.SelectSingleNode("//Integration/UrlSchemeOverrides/CustomOverrides/Override/Scheme[text()=""$Scheme""]")
